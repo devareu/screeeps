@@ -292,13 +292,6 @@ var funcBuildOrders =
 		room.createConstructionSite(newPoint.x,newPoint.y, STRUCTURE_CONTAINER)
 		let found = room.lookForAt(LOOK_CONSTRUCTION_SITES,newPoint.x,newPoint.y)
 		return found[0].id
-	},
-	buildExtensions: function(roomName)
-	{
-		var myRoom = Memory.rooms.find(element => element.name == roomName);
-		var room = Game.rooms[roomName]
-		var newPoint = funcHelpers.findPointInLine(myRoom.name, myRoom.spawns[0].pos, myRoom.cityCenter.pos, "-2away")
-		console.log(newPoint.x,newPoint.y)
 	}
 };
 module.exports = funcBuildOrders;

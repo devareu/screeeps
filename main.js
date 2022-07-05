@@ -4,8 +4,13 @@ var baseRoom = 'W8N3'
 
 module.exports.loop = function ()
 {
+    if(Memory.rooms.length == null || Memory.rooms.length == 0)
+    {
+        loopMemoryManagement.start(baseRoom)
+    }
 	for(room in Memory.rooms)
 	{
+	   console.log(room)
 		loopCore.creepManagement(Memory.rooms[room].name)
 		if(Game.time % 50 == 0)
 		{

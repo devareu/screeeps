@@ -3,6 +3,8 @@ var loopMemoryManagement =
 {
   start: function(currentRoom)
   {
+      if(Memory.rooms.length != null && Memory.rooms.length > 0)
+      {
     var thisRoom = Game.rooms[Object.keys(Game.spawns)[0]]
 	var myRoom = Memory.rooms.find(element => element.name == currentRoom);
     let buildList = thisRoom.find(FIND_CONSTRUCTION_SITES)
@@ -117,24 +119,41 @@ var loopMemoryManagement =
 		}
 		break;
 	  }
-	  default://essentially the first pass
-      {
+    }
+  }
+  else
+  {
         let startingRoom = Object.keys(Game.spawns)[0]
         let room = Game.rooms[startingRoom]
         Memory.rooms = []
         let memRooms = Memory.rooms
         var newRoom = {}
         newRoom.name = startingRoom
+        
+        //Get CenterPoint of Room for CitySquare
+        var xSum = 0;
+        var xCount = 0;
+        var ySum = 0;
+        var yCount = 0;
         //Find Spawns and Put it in
         newRoom.spawns = []
-        newSpawn = {}
+        var newSpawn = {}
         newSpawn.id = Game.spawns[startingRoom].id
         newSpawn.pos = Game.spawns[startingRoom].pos
         newRoom.spawns.push(newSpawn)
+          xSum += Game.spawns[startingRoom].pos.x
+          xCount++
+          ySum += Game.spawns[startingRoom].pos.y
+          yCount++
         //Find Controller and Put it in
         newRoom.controller = {}
         newRoom.controller.id = room.controller.id
         newRoom.controller.pos = room.controller.pos
+        //Get CenterPoint of Room for CitySquare
+         xSum = newRoom.controller.pos.x;
+         xCount++;
+         ySum = newRoom.controller.pos.y;
+         yCount++;
         //Find Sources and Put them in
         let roomSources = _.map(room.find(FIND_SOURCES), function(source){return {id: source.id, pos: source.pos};});
         newRoom.sources = []
@@ -145,26 +164,12 @@ var loopMemoryManagement =
           newSource.id = roomSources[roomSource].id
           newSource.pos = roomSources[roomSource].pos
           newRoom.sources.push(newSource)
-        }
-        //Get CenterPoint of Room for CitySquare
-        var xSum = newRoom.controller.pos.x;
-        var xCount = 1;
-        var ySum = newRoom.controller.pos.y;
-        var yCount = 1;
-        for(source in newRoom.sources)
-        {
-          xSum += newRoom.sources[source].pos.x
+          xSum += roomSources[roomSource].pos.x
           xCount++
-          ySum += newRoom.sources[source].pos.y
+          ySum += roomSources[roomSource].pos.y
           yCount++
         }
-        for(spawn in newRoom.spawns)
-        {
-          xSum += newRoom.spawns[spawn].pos.x
-          xCount++
-          ySum += newRoom.spawns[spawn].pos.y
-          yCount++
-        }
+
         newRoom.cityCenter = {}
         newRoom.cityCenter.pos = {}
         newRoom.cityCenter.pos.x = Math.round(xSum / xCount)
@@ -172,10 +177,8 @@ var loopMemoryManagement =
         newRoom.cityCenter.pos.roomName = startingRoom
         memRooms.push(newRoom)
         myRoom.phase = 0
-        console.log("Ready For Stage 1")
-        break;
-      }
-    }
+        console.log("Ready For Stage 1")      
+  }
   }
 };
 
