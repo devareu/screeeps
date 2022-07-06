@@ -10,7 +10,6 @@ module.exports.loop = function ()
     }
 	for(room in Memory.rooms)
 	{
-	   console.log(room)
 		loopCore.creepManagement(Memory.rooms[room].name)
 		if(Game.time % 50 == 0)
 		{

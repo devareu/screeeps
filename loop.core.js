@@ -125,9 +125,9 @@ var loopCore =
 					harvesterBuild = [WORK,WORK,CARRY,MOVE]
 					upgraderCount = 4;
 					upgraderBuild = [WORK,WORK,CARRY,MOVE]
-					builderCount = 2;
+					builderCount = 4;
 					roadMaintCount = 2;
-					truckCount = 4;
+					truckCount = 6;
 					spawnNannyCount = 1;
 					break;
 				}

@@ -2,10 +2,13 @@ var functions =
 {
     stopBuilds: function()
     {
+		var intCounter = 0
       for(sites in Game.constructionSites)
       {
+		  intCounter++
         Game.getObjectById(sites).remove()
       }
+	  return intCounter
     },
 
 	addRoomToAllCreeps: function()

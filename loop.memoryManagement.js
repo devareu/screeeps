@@ -72,7 +72,7 @@ var loopMemoryManagement =
 		{
           console.log("Not Ready For Stage 5")
 		}
-		  break;
+		 break;
 	  }
       case 5://Build Upgrager Container
 	  {
@@ -102,7 +102,17 @@ var loopMemoryManagement =
 	  }
       case 7:
 	  {
-		  //Build
+		if(buildList.length < 1)
+        {
+			funcBuildOrders.buildExtensions(thisRoom.name)
+			console.log("Ready For Stage 7")		
+		}
+		else
+		{
+          console.log("Not Ready For Stage 7")
+		}
+		 break;
+		  
 		  break;
 	  }
       case 8:

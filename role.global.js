@@ -102,30 +102,45 @@ run: function(creep)
 		
 		function findEnergy(creep, thisRoom)
 		{
-			let targets = creep.room.find(FIND_STRUCTURES,
-			{
-				filter: (structure) =>
-				{
-					return (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_STORAGE)
-					&& structure.store.getUsedCapacity(RESOURCE_ENERGY) > creep.store.getCapacity()
-				}
-			});
 			var primaryTarget
-			if(targets.length >= 1)
+			switch (creep.memory.role)
 			{
-				if(targets.length > 1)
+				case 'upgrader':
 				{
-					primaryTarget = creep.pos.findClosestByPath(targets);
+					if(Game.getObjectById(thisRoom.controllerContainer).store.getUsedCapacity(RESOURCE_ENERGY) > 100)
+					{
+						primaryTarget = Game.getObjectById(thisRoom.controllerContainer)
+					}
+					break;
 				}
-				else
+				default:
 				{
-					primaryTarget = targets[0];
+					let targets = creep.room.find(FIND_STRUCTURES,
+					{
+						filter: (structure) =>
+						{
+							return (structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_STORAGE)
+							&& structure.store.getUsedCapacity(RESOURCE_ENERGY) > creep.store.getCapacity()
+						}
+					});
+					if(targets.length >= 1)
+					{
+						if(targets.length > 1)
+						{
+							primaryTarget = creep.pos.findClosestByPath(targets);
+						}
+						else
+						{
+							primaryTarget = targets[0];
+						}
+
+					}
 				}
-				if(creep.withdraw(primaryTarget,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
-				{
-					creep.moveTo(primaryTarget, {visualizePathStyle: {stroke: '#ffaa00'}});
-					creep.say('🔄fndNrg');
-				}
+			}
+			if(creep.withdraw(primaryTarget,RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+			{
+				creep.moveTo(primaryTarget, {visualizePathStyle: {stroke: '#ffaa00'}});
+				creep.say('🔄fndNrg');
 			}
 			else
 			{
