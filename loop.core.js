@@ -119,16 +119,16 @@ var loopCore =
 				case 8:
 				case 9:
 				case 10:
-				{
-					
-					harvesterCount = 4;
-					harvesterBuild = [WORK,WORK,CARRY,MOVE]
+				{					
+					harvesterCount = 2;
+					harvesterBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE]
 					upgraderCount = 4;
-					upgraderBuild = [WORK,WORK,CARRY,MOVE]
-					builderCount = 4;
-					roadMaintCount = 2;
+					upgraderBuild = [WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE]
+					builderCount = 3;
+					roadMaintCount = 3;
 					truckCount = 6;
 					spawnNannyCount = 1;
+					spawnNannyBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE]
 					break;
 				}
 			}

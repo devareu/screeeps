@@ -142,10 +142,10 @@ run: function(creep)
 				creep.moveTo(primaryTarget, {visualizePathStyle: {stroke: '#ffaa00'}});
 				creep.say('🔄fndNrg');
 			}
-			else
-			{
-				harvest(creep, thisRoom);
-			}
+			//else
+			//{
+//				harvest(creep, thisRoom);
+			//}
 		}
 		
 		function harvest(creep, thisRoom)
@@ -186,15 +186,17 @@ run: function(creep)
 		{
 			switch(creep.memory.role)
 			{
+				case 'roadmaint':
 				case 'builder':
 				{
-					var repairtargets = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax) && (structure.structureType != 'road')});
-					if(repairtargets.length > 0) 
+					var repairTargets = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax)});
+					if(repairTargets.length > 0) 
 					{
-						if(creep.repair(repairtargets[0]) == ERR_NOT_IN_RANGE) 
+						var target = creep.pos.findClosestByPath(repairTargets);
+						if(creep.repair(target) == ERR_NOT_IN_RANGE) 
 						{
 							creep.say('Rpr')
-							creep.moveTo(repairtargets[0], {visualizePathStyle: {stroke: '#ffffff'}});
+							creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
 						}
 					}
 					else
@@ -224,10 +226,11 @@ run: function(creep)
 					var repairtargets = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax) && (structure.structureType == 'road')});
 					if(repairtargets.length > 0) 
 					{
-						if(creep.repair(repairtargets[0]) == ERR_NOT_IN_RANGE) 
-						{							
+						var target = creep.pos.findClosestByPath(repairTargets);
+						if(creep.repair(target) == ERR_NOT_IN_RANGE) 
+						{
 							creep.say('RprRd')
-							creep.moveTo(repairtargets[0], {visualizePathStyle: {stroke: '#ffffff'}});
+							creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
 						}
 					}
 					else
