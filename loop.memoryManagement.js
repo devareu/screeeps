@@ -103,17 +103,15 @@ var loopMemoryManagement =
       case 7:
 	  {
 		if(buildList.length < 1)
-        {
+		{
 			funcBuildOrders.buildExtensions(thisRoom.name)
 			console.log("Ready For Stage 7")		
 		}
 		else
 		{
-          console.log("Not Ready For Stage 7")
+			console.log("Not Ready For Stage 7")
 		}
-		 break;
-		  
-		  break;
+		break;
 	  }
       case 8:
       case 9:
