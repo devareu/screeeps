@@ -47,6 +47,12 @@ var loopCore =
 					limit = spawnNannyCount
 					break;
 				}
+				case 'harvestNanny':
+				{
+					prefix = 'hvtNny'
+					limit = harvestNannyCount
+					break;
+				}
 			}
 			
 			var numbers = units.map(function(a) { var test = a.name; return test.replace(prefix,'');})
@@ -121,14 +127,15 @@ var loopCore =
 				case 10:
 				{					
 					harvesterCount = 2;
-					harvesterBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE]
-					upgraderCount = 4;
-					upgraderBuild = [WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE]
-					builderCount = 3;
+					harvesterBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE];
+					upgraderCount = 3;
+					upgraderBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE];
+					builderCount = 2;
 					roadMaintCount = 3;
-					truckCount = 6;
+					truckCount = 4;
+					truckBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE];
 					spawnNannyCount = 1;
-					spawnNannyBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE]
+					spawnNannyBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE];
 					break;
 				}
 			}
@@ -276,10 +283,94 @@ var loopCore =
 					case 'spawnNanny':
 					roleGlobal.run(creep);
 					break;
+					case 'harvestNanny':
+					roleGlobal.run(creep);
+					break;
 				}
 			}
 		}
+	},
+	
+	jobManagement: function(roomName)
+	{
+		var myRoom = Memory.rooms.find(element => element.name == roomName);
+		var roomJobs = myRoom.jobs
+		let thisRoom = Game.rooms[roomName];
+		
+		let repairTargets = thisRoom.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax)});
+		//get current repair work from memory
+		//get structures needing repair from room
+		//compare and prioritze
+		
+		let constructionTargets = thisRoom.find(FIND_MY_CONSTRUCTION_SITES);
+		//get current build work from memory
+		//get build jkbs for consteuction
+		//compare and prioritize
+		
+		let deliveryTargets = thisRoom.find(FIND_STRUCTURES, {filter: (structure) => ((structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_EXTENSION) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0)});
+		//get truck related work from memory
+		//get new rruck work from room
+		//compare and prioritize
+		//console.log(JSON.stringify(repairTargets))
+		for(repairTarget in repairTargets)
+		{
+			console.log(JSON.stringify(repairTarget))
+			var applicableJobs = _.filter(roomJobs, (job) => job.id == repairTargets[repairTarget].id && job.action == 'repair');
+			if(applicableJobs.length >= 1)
+			{//Make sure we have enough engaged
+			}
+			else
+			{//create the job
+				var newJob = {}
+				newJob.id = repairTargets[repairTarget].id
+				newJob.action = 'repair'
+				newJob.amount = repairTargets[repairTarget].hitsMax - repairTargets[repairTarget].hits
+				newJob.assigned = []
+				roomJobs.push(newJob);
+			}
+			
+		}
+		
+		for(deliveryTarget in deliveryTargets)
+		{
+			console.log(JSON.stringify(deliveryTarget))
+			var applicableJobs = _.filter(roomJobs, (job) => job.id == deliveryTargets[deliveryTarget].id && job.action == 'repair');
+			if(applicableJobs.length >= 1)
+			{//Make sure we have enough engaged
+			}
+			else
+			{//create the job
+				var newJob = {}
+				newJob.id = deliveryTargets[deliveryTarget].id
+				newJob.action = 'delivery'
+				newJob.amount = deliveryTargets[deliveryTarget].hitsMax - deliveryTargets[deliveryTarget].hits
+				newJob.assigned = []
+				roomJobs.push(newJob);
+			}
+			
+		}
+		
+		for(constructionTarget in constructionTargets)
+		{
+			console.log(JSON.stringify(constructionTarget))
+			var applicableJobs = _.filter(roomJobs, (job) => job.id == constructionTargets[constructionTarget].id && job.action == 'repair');
+			if(applicableJobs.length >= 1)
+			{//Make sure we have enough engaged
+			}
+			else
+			{//create the job
+				var newJob = {}
+				newJob.id = constructionTargets[constructionTarget].id
+				newJob.action = 'construction'
+				newJob.amount = constructionTargets[constructionTarget].hitsMax - constructionTargets[constructionTarget].hits
+				newJob.assigned = []
+				roomJobs.push(newJob);
+			}
+			
+		}
+		
 	}
+	
 };
 
 module.exports = loopCore;

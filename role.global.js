@@ -97,7 +97,7 @@ run: function(creep)
 			else
 			{
 				deliverEnergy(creep, thisRoom);
-			}			
+			}	
 		}
 		
 		function findEnergy(creep, thisRoom)
@@ -142,10 +142,7 @@ run: function(creep)
 				creep.moveTo(primaryTarget, {visualizePathStyle: {stroke: '#ffaa00'}});
 				creep.say('🔄fndNrg');
 			}
-			//else
-			//{
-//				harvest(creep, thisRoom);
-			//}
+
 		}
 		
 		function harvest(creep, thisRoom)
@@ -186,10 +183,9 @@ run: function(creep)
 		{
 			switch(creep.memory.role)
 			{
-				case 'roadmaint':
 				case 'builder':
 				{
-					var repairTargets = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax)});
+					var repairTargets = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax && structure.structureType != 'road')});
 					if(repairTargets.length > 0) 
 					{
 						var target = creep.pos.findClosestByPath(repairTargets);
@@ -223,13 +219,13 @@ run: function(creep)
 				}
 				case 'roadmaint':
 				{
-					var repairtargets = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax) && (structure.structureType == 'road')});
-					if(repairtargets.length > 0) 
+					var repairTargets = creep.room.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax && structure.structureType == 'road')});
+					if(repairTargets.length > 0) 
 					{
+						creep.say('RprRd')
 						var target = creep.pos.findClosestByPath(repairTargets);
 						if(creep.repair(target) == ERR_NOT_IN_RANGE) 
 						{
-							creep.say('RprRd')
 							creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
 						}
 					}
@@ -313,11 +309,11 @@ run: function(creep)
 		creep.memory.action = 'work';
 	}
 	
-	if((creep.ticksToLive > 200 && creep.memory.action !='renew') || (creep.memory.role == 'harvester' || creep.memory.role == 'upgrader'))
+	if((creep.ticksToLive > 200 && creep.memory.action !='renew') || (creep.memory.role == 'harvester' || creep.memory.role == 'upgrader' || creep.memory.role == 'harvestNanny'))
 	{
 		switch(true)
 		{
-			case (creep.memory.primed == true && creep.memory.role == 'harvester'):
+			case (creep.memory.primed == true && (creep.memory.role == 'harvester' || creep.memory.role == 'harvestNanny')):
 			{//Its a harvester and is primed so we want to drop that energy
 				creep.memory.action = 'placeEnergy';
 				break;
@@ -325,6 +321,11 @@ run: function(creep)
 			case (!creep.memory.primed && creep.memory.role == 'harvester'):
 			{//Its a harvester and is NOT primed so we want to gather that energy
 				creep.memory.action = 'harvest'
+				break;
+			}
+			case (!creep.memory.primed && creep.memory.role == 'harvestNanny'):
+			{//Its a harvester and is NOT primed so we want to gather that energy
+				creep.memory.action = 'findEnergy'
 				break;
 			}
 			case (!creep.memory.primed && creep.memory.role == 'truck'):

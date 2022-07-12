@@ -137,7 +137,7 @@ var loopMemoryManagement =
         let memRooms = Memory.rooms
         var newRoom = {}
         newRoom.name = startingRoom
-        
+        newRoom.jobs = []
         //Get CenterPoint of Room for CitySquare
         var xSum = 0;
         var xCount = 0;
