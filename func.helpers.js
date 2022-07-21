@@ -3,6 +3,13 @@ var funcHelpers =
 	findAvailablePoint: function(roomName, pos)
 	{
 	},
+	
+	findLengthBetween: function(pos1,pos2)
+	{
+		let thisLength = Math.sqrt((Math.pow((pos1.x - pos2.x), 2) + (Math.pow((pos1.y - pos2.y), 2))))
+		return thisLength
+	},
+	
 	findPointInLine: function(roomName, pos1, pos2, task)
 	{
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
@@ -14,7 +21,6 @@ var funcHelpers =
 		let lineYintercept = pos1.y - (lineSlope*pos1.x)
 		var newPosX
 		var newPosY
-		console.log(pos1.x,pos1.y,pos2.x,pos2.y)
 		switch (true)
 		{
 			case (isNaN(task)):
@@ -29,7 +35,6 @@ var funcHelpers =
 				else if(task.slice(task.length-4,task.length) == "away")
 				{
 					let awayBy = Number(task.replace(/away/,""))
-					console.log(awayBy)
 					switch (true)
 					{
 						case (pos1.x == pos2.x && pos1.y < pos2.y)://1 is up, x, y++ 
@@ -87,7 +92,6 @@ var funcHelpers =
 							break;
 						}
 					}
-					console.log(newPosX,newPosY)
 					break;
 				}
 			}

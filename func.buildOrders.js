@@ -1,6 +1,6 @@
 var funcHelpers = require('func.helpers');
 var funcBuildOrders =
-{
+{//require('func.buildOrders').buildWalls('W8N3')
 	buildRoadSurround: function(pos)
 	{
 		var room = Game.rooms[pos.roomName]
@@ -118,38 +118,6 @@ var funcBuildOrders =
 		for(var pathPoint in ret.path)
 		{
 			room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_ROAD);
-			if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-			}
-			if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-			}
-			if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-			}
-			if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-			}
-			if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-			}
-			if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-			}
-			if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-			}
-			if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-			{
-				room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-			}
 		}
 		return 'completed'
 	},
@@ -187,38 +155,6 @@ var funcBuildOrders =
 			for(var pathPoint in ret.path)
 			{
 				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				}
 			}
 		}
 
@@ -258,38 +194,38 @@ var funcBuildOrders =
 			for(var pathPoint in ret.path)
 			{
 				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				}
-				if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				{
-					room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				}
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
+				// }
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
+				// }
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
+				// }
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y, STRUCTURE_ROAD);
+				// }
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
+				// }
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
+				// }
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y, STRUCTURE_ROAD);
+				// }
+				// if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
+				// {
+					// room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
+				// }
 			}
 		}
 
@@ -300,16 +236,27 @@ var funcBuildOrders =
 	{
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
 		var room = Game.rooms[roomName]
-		const thisRoomTerrain = Game.map.getRoomTerrain(roomName);
-		
-		if (myRoom.sources.lengh > 1)
+		if(room.controller.level > 3)
 		{
-			var newPoint = findPointInLine(myRoom.name, myRoom.sources[0].pos, myRoom.sources[1].pos,"50%")
+			const thisRoomTerrain = Game.map.getRoomTerrain(roomName);
+			var newPoint = {}
+			if (myRoom.sources.length > 1)
+			{
+				newPoint = funcHelpers.findPointInLine(myRoom.name, myRoom.spawns[0].pos, myRoom.cityCenter.pos,"2away")
+			}		
+			
+			var result = room.createConstructionSite(newPoint.x,newPoint.y, STRUCTURE_STORAGE)
+			
+			if(result == 0)
+			{
+				let found = room.lookForAt(LOOK_CONSTRUCTION_SITES,newPoint.x,newPoint.y)
+				return found.id
+			}
+			else
+			{
+				console.log('Unable to Build Store',roomName,result,JSON.stringify(myRoom.cityCenter.pos))
+			}
 		}
-		
-		room.createConstructionSite(posX,posY, STRUCTURE_STORAGE)
-		let found = room.lookForAt(LOOK_CONSTRUCTION_SITES,posX,posY)
-		return found.id
 	},
 	
 	buildUpgraderContainer: function(roomName)
@@ -459,6 +406,69 @@ var funcBuildOrders =
 			}
 			loopLevel = loopLevel + 2
 		}
+	},
+	
+	buildWalls: function(roomName)
+	{
+		var myRoom = Memory.rooms.find(element => element.name == roomName);
+		var room = Game.rooms[roomName]
+		
+		let thisRoomsFlags = _.filter(Game.flags, (flag) => flag.pos.roomName == roomName);
+		let intCounter = 1;
+		var startFlag = {}
+		var endFlag = {}
+		do
+		{
+			startFlag = _.filter(thisRoomsFlags, (flag) => flag.name == 'Wall' + intCounter + 'start')[0];
+			endFlag = _.filter(thisRoomsFlags, (flag) => flag.name == 'Wall' + intCounter + 'end')[0]
+			intCounter++;
+		}
+		while (startFlag == null & endFlag == null & intCounter < 5);
+
+		//filter(Game.creeps, (creep) => creep.memory.role == 'harvester' && creep.memory.room == roomName);
+		var goal = { pos: endFlag.pos, range: 0}
+
+		var ret = PathFinder.search(startFlag.pos, goal,
+		{
+			plainCost: 1,
+			swampCost: 1,
+			roomCallback: function(roomName)
+			{
+				if (!room) return;
+				let costs = new PathFinder.CostMatrix;
+				room.find(FIND_STRUCTURES).forEach(function(struct)
+				{
+					if (struct.structureType === STRUCTURE_ROAD)
+					{
+						costs.set(struct.pos.x, struct.pos.y, 1);
+					}
+					else if (struct.structureType !== STRUCTURE_CONTAINER && (struct.structureType !== STRUCTURE_RAMPART || !struct.my))
+					{
+						costs.set(struct.pos.x, struct.pos.y, 0xff);
+					}
+				});
+				return costs;
+			},
+		});
+		let wallLength = ret.path.length
+		let centerPoint = Math.round(wallLength / 2)
+		for(var pathPoint in ret.path)
+		{
+			if(pathPoint == centerPoint)
+			{//This is the center of the wall, its a rampart
+				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_RAMPART);
+			}
+			else
+			{//This is not the center, its a wall
+				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_WALL);
+			}
+		}
+		let towerLocation =  funcHelpers.findPointInLine(roomName, ret.path[centerPoint], myRoom.cityCenter.pos, '1away')
+		room.createConstructionSite(towerLocation.x,towerLocation.y, STRUCTURE_TOWER);
+		room.createConstructionSite(endFlag.pos.x,endFlag.pos.y, STRUCTURE_WALL);
+		startFlag.remove()
+		endFlag.remove()
+		return 'completed'
 	}
 
 };

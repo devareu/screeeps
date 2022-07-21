@@ -1,5 +1,6 @@
 var functions =
 {
+	//require('functions').stopBuilds()
     stopBuilds: function()
     {
 		var intCounter = 0
