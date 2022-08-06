@@ -4,6 +4,7 @@ var funcHelpers = require('func.helpers');
 
 var loopCore =
 {
+	
 	creepManagement: function(roomName)
 	{		
 		function genNewName (roleName)
@@ -72,7 +73,26 @@ var loopCore =
 		
 		{//Core Variables for Creep Configuration
 			var myRoom = Memory.rooms.find(element => element.name == roomName);
-			var harvesterCount = 0;
+			var harvesterCount = 0;	
+			if(myRoom.sources[0].harvestersMax > 1)
+			{
+				harvesterCount = harvesterCount + 2
+			}
+			else
+			{
+				harvesterCount = harvesterCount + 1
+			}				
+			if(myRoom.sources[1])
+			{
+				if(myRoom.sources[1].harvestersMax > 1)
+				{
+					harvesterCount = harvesterCount + 2
+				}
+				else
+				{
+					harvesterCount = harvesterCount + 1
+				}
+			}
 			var harvesterBuild = [WORK,CARRY,MOVE,MOVE]
 			var upgraderCount = 0;
 			var upgraderBuild = [WORK,CARRY,MOVE,MOVE]
@@ -85,57 +105,66 @@ var loopCore =
 			var spawnNannyCount = 0;
 			var spawnNannyBuild = [CARRY,CARRY,CARRY,MOVE]
 		}
+
 		{//Phase Based Creep Configuration
 			switch(myRoom.phase)
 			{
 				case 0:
 				{
-					harvesterCount = 2;
+					if(myRoom.sources[0].store && myRoom.sources[1] && myRoom.sources[1].store)
+					{
+						truckCount = 1;
+					}
+					else
+					{
+						truckCount = 0;
+					}
+						
 					upgraderCount = 1;
 					builderCount = 3;
 					roadMaintCount = 1;
-					truckCount = 0;
 					spawnNannyCount = 0;
 					break;
 				}
 				case 1:
-				case 2:
 				{
-					harvesterCount = 2;
-					upgraderCount = 1;
+					harvesterBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE];
+					upgraderCount = 3;
 					builderCount = 3;
 					roadMaintCount = 1;
-					truckCount = 0;
-					spawnNannyCount = 0;
+					truckCount = 2;
+					spawnNannyCount = 1;
+					break;
+				}
+				case 2:
+				{
+					harvesterBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE,MOVE];
+					upgraderCount = 3;
+					upgraderBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE];
+					builderCount = 2;
+					roadMaintCount = 1;
+					truckCount = 2;
+					truckBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE];
+					spawnNannyCount = 1;
+					spawnNannyBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE];
 					break;
 				}
 				case 3:
 				case 4:
-				{
-					harvesterCount = 2;
-					upgraderCount = 2;
-					builderCount = 2;
-					roadMaintCount = 1;
-					truckCount = 0;
-					spawnNannyCount = 0;
-					harvesterBuild = [WORK,WORK,CARRY,MOVE]
-					break;
-				}
 				case 5:
 				case 6:
 				case 7:
 				case 8:
 				case 9:
 				case 10:
-				{					
-					harvesterCount = 4;
+				{
 					harvesterBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE];
 					upgraderCount = 3;
 					upgraderBuild = [WORK,WORK,WORK,WORK,WORK,CARRY,MOVE,MOVE];
 					builderCount = 2;
 					builderBuild = [WORK,WORK,WORK,WORK,CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE];
-					roadMaintCount = 3;
-					truckCount = 1;
+					roadMaintCount = 2;
+					truckCount = 2;
 					truckBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE];
 					spawnNannyCount = 1;
 					spawnNannyBuild = [CARRY,CARRY,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE];
@@ -147,10 +176,10 @@ var loopCore =
 		{//Clean Up Missing Creeps
 			for(var name in Memory.creeps)
 			{
-			  if(!Game.creeps[name])
-			  {
-				delete Memory.creeps[name];
-			  }
+				if(!Game.creeps[name])
+				{
+					delete Memory.creeps[name];
+				}
 			}
 		}
 		
@@ -162,22 +191,34 @@ var loopCore =
 			var trucks = _.filter(Game.creeps, (creep) => creep.memory.role == 'truck' && creep.memory.room == roomName);
 			var spawnNannys = _.filter(Game.creeps, (creep) => creep.memory.role == 'spawnNanny' && creep.memory.room == roomName);
 		}
+		
 		{//Handle Spawning Creeps
 			if(harvesters.length < harvesterCount)
 			{
 				var newName = genNewName('harvester');
-				var weight = 1
-				if(newName.charAt(newName.length - 1) % 2 == 0)
+				let hrvZeroCount = _.filter(harvesters, (hrv) => hrv.memory.weight == 0).length
+				let hrvZeroMax = myRoom.sources[0].harvestersMax
+				if(hrvZeroMax > 2){ hrvZeroMax = 2}
+				var weight = 0
+				
+				if(myRoom.sources[1])
 				{
-					weight = 0
+					let hrvOneCount = _.filter(harvesters, (hrv) => hrv.memory.weight == 1).length
+					let hrvOneMax = myRoom.sources[1].harvestersMax
+					if(hrvOneMax > 2)
+					{
+						hrvOneMax = 2
+					}
+					if((hrvZeroCount > hrvOneCount || hrvZeroCount == hrvZeroMax) && hrvOneCount < hrvOneMax)
+					{
+						weight = 1
+					}
 				}
-				if(Game.spawns[roomName].spawnCreep(harvesterBuild, newName,{memory: {role: 'harvester', weight: weight, worker: true, room: roomName}}) == ERR_NOT_ENOUGH_ENERGY)
+				if((Game.spawns[roomName].spawnCreep(harvesterBuild, newName,{memory: {role: 'harvester', weight: weight, worker: true, room: roomName}}) == ERR_NOT_ENOUGH_ENERGY) && harvesters.length < 3)
 				{
 					Game.spawns[roomName].spawnCreep([WORK,CARRY,MOVE,MOVE], newName,{memory: {role: 'harvester', weight: weight, worker: true, room: roomName}})
 				}
-
-			}	
-			
+			}			
 			else if(spawnNannys.length < spawnNannyCount)
 			{
 				
@@ -194,13 +235,9 @@ var loopCore =
 			{
 				var newName = genNewName('truck');
 				var weight = 1
-				if(newName.charAt(newName.length - 1) % 3 == 0)
+				if(newName.charAt(newName.length - 1) % 2 == 0)
 				{
 					weight = 0
-				}
-				else
-				{
-					weight = newName.charAt(newName.length - 1) % 3
 				}
 				Game.spawns[roomName].spawnCreep(truckBuild, newName, {memory: {role: 'truck',weight:weight,worker:true, room: roomName}});
 			}
@@ -280,10 +317,87 @@ var loopCore =
 		}
 		
 		{//Give Creeps Their Roles
-			for(var name in Game.creeps)
+		 let roomCreeps = _.filter(Game.creeps, (cr) => cr.memory.room == roomName);
+			for(var name in roomCreeps)
 			{
-				var creep = Game.creeps[name];
-
+				var creep = roomCreeps[name];
+				switch(creep.memory.role)
+				{
+					case 'harvester':
+					{
+						if(JSON.stringify(creep.body.map(a => a.type)) != JSON.stringify(harvesterBuild))
+						{
+							creep.memory.replace = 1
+							
+						}
+						else
+						{
+							creep.memory.replace = 0
+						}
+						break;
+					}
+					case 'upgrader':
+					{
+						if(JSON.stringify(creep.body.map(a => a.type)) != JSON.stringify(upgraderBuild))
+						{
+							creep.memory.replace = 1
+						}
+						else
+						{
+							creep.memory.replace = 0
+						}
+						break;
+					}
+					case 'builder':	
+					{
+						if(JSON.stringify(creep.body.map(a => a.type)) != JSON.stringify(builderBuild))
+						{
+							creep.memory.replace = 1
+						}
+						else
+						{
+							creep.memory.replace = 0
+						}
+						break;
+					}
+					case 'roadMaint':	
+					{
+						if(JSON.stringify(creep.body.map(a => a.type)) != JSON.stringify(roadMaintBuild))
+						{
+							creep.memory.replace = 1
+						}
+						else
+						{
+							creep.memory.replace = 0
+						}
+						break;
+					}
+					case 'truck':	
+					{
+						if(JSON.stringify(creep.body.map(a => a.type)) != JSON.stringify(truckBuild))
+						{
+							creep.memory.replace = 1
+						}
+						else
+						{
+							creep.memory.replace = 0
+						}
+						break;
+					}
+					case 'spawnNanny':
+					{
+						if(JSON.stringify(creep.body.map(a => a.type)) != JSON.stringify(spawnNannyBuild))
+						{
+							creep.memory.replace = 1
+						}
+						else
+						{
+							creep.memory.replace = 0
+						}
+						break;
+					}
+					
+				}
 				roleGlobal.run(creep);
 			}
 		}
@@ -291,82 +405,110 @@ var loopCore =
 
 	jobManagement: function(roomName)
 	{
+		let wallMinHealth = 5000
+		let rampartMinHealth = 2500
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
-		var roomJobs = myRoom.jobs
 		let thisRoom = Game.rooms[roomName];
+		var roomJobs = myRoom.jobs
+		var newJobs = []
+		var existingJobs = []
 		
-		let repairTargets = thisRoom.find(FIND_STRUCTURES, {filter: (structure) => (structure.hits < structure.hitsMax)});
-		
+		let repairTargets = thisRoom.find(FIND_STRUCTURES, {filter: (structure) => 
+		(
+			(//Not at full health, ignore ramparts and walls
+				structure.hits < structure.hitsMax
+				&& structure.structureType != STRUCTURE_RAMPART
+				&& structure.structureType != STRUCTURE_WALL
+			)
+			||
+			(//Walls
+				structure.hits < wallMinHealth
+				&& structure.structureType == STRUCTURE_WALL								
+			)								
+			||
+			(//Ramparts
+				structure.hits < rampartMinHealth
+				&& structure.structureType == STRUCTURE_RAMPART
+			)
+		)});
 		let constructionTargets = thisRoom.find(FIND_MY_CONSTRUCTION_SITES);
-		
 		let deliveryTargets = thisRoom.find(FIND_STRUCTURES, {filter: (structure) => ((structure.structureType == STRUCTURE_CONTAINER || structure.structureType == STRUCTURE_EXTENSION) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0)});
 
 		for(repairTarget in repairTargets)
 		{
-			var applicableJobs = _.filter(roomJobs, (job) => job.id == repairTargets[repairTarget].id && job.action == 'repair');
-			if(applicableJobs.length < 1)
-			{//Make sure we have enough engaged
+			var newJob = {}
+			newJob.id = repairTargets[repairTarget].id
+			newJob.action = 'repair'
+			newJob.amount = repairTargets[repairTarget].hitsMax - repairTargets[repairTarget].hits
+			newJob.assigned = []
+			
+			var applicableJobs = _.filter(roomJobs, (job) => 
+				job.id == repairTargets[repairTarget].id 
+				&& job.action == 'repair');
+			if(applicableJobs.length != 1)
+			{//create the job
+				newJobs.push(newJob);
 			}
 			else
-			{//create the job
-				var newJob = {}
-				newJob.id = repairTargets[repairTarget].id
-				newJob.action = 'repair'
-				newJob.amount = repairTargets[repairTarget].hitsMax - repairTargets[repairTarget].hits
-				newJob.assigned = []
-				roomJobs.push(newJob);
+			{
+				existingJobs.push(newJob)
 			}
-			
 		}
 		
 		for(deliveryTarget in deliveryTargets)
 		{
-			var applicableJobs = _.filter(roomJobs, (job) => job.id == deliveryTargets[deliveryTarget].id && job.action == 'repair');
-			if(applicableJobs.length < 1)
-			{//Make sure we have enough engaged
+			var newJob = {}
+			newJob.id = deliveryTargets[deliveryTarget].id
+			newJob.action = 'delivery'
+			newJob.amount = deliveryTargets[deliveryTarget].hitsMax - deliveryTargets[deliveryTarget].hits
+			newJob.assigned = []
+				
+			var applicableJobs = _.filter(roomJobs, (job) => 
+				job.id == deliveryTargets[deliveryTarget].id 
+				&& job.action == 'delivery');
+			if(applicableJobs.length != 1)
+			{//create the job
+				newJobs.push(newJob);
 			}
 			else
-			{//create the job
-				var newJob = {}
-				newJob.id = deliveryTargets[deliveryTarget].id
-				newJob.action = 'delivery'
-				newJob.amount = deliveryTargets[deliveryTarget].hitsMax - deliveryTargets[deliveryTarget].hits
-				newJob.assigned = []
-				roomJobs.push(newJob);
+			{
+				existingJobs.push(newJob)
 			}
-			
 		}
 		
 		for(constructionTarget in constructionTargets)
 		{
-			var applicableJobs = _.filter(roomJobs, (job) => job.id == constructionTargets[constructionTarget].id && job.action == 'repair');
-			if(applicableJobs.length < 1)
-			{//Make sure we have enough engaged
-			}
-			else
-			{//create the job
-				var newJob = {}
-				newJob.id = constructionTargets[constructionTarget].id
-				newJob.action = 'construction'
-				newJob.amount = constructionTargets[constructionTarget].hitsMax - constructionTargets[constructionTarget].hits
-				newJob.assigned = []
-				roomJobs.push(newJob);
-			}
+			var newJob = {}
+			newJob.id = constructionTargets[constructionTarget].id
+			newJob.action = 'construction'
+			newJob.amount = constructionTargets[constructionTarget].hitsMax - constructionTargets[constructionTarget].hits
+			newJob.assigned = []
 			
-		}
-		
-		for(job in Memory.jobs)
-		{
-			//check the amount matches the number lf assigned
-			if (Memory.jobs[job].assigned.length < 1)
-			{//unassigned
-				
+			var applicableJobs = _.filter(roomJobs, (job) => 
+				job.id == constructionTargets[constructionTarget].id 
+				&& job.action == 'construction');
+			if(applicableJobs.length != 1)
+			{//create the job
+				newJobs.push(newJob);
 			}
 			else
 			{
-				
+				existingJobs.push(newJob)
 			}
 		}
+		
+		myRoom.jobs = newJobs.concat(existingJobs)
+		
+		//We should now have a current list of actions and their amounts
+		for(job in myRoom.jobs)
+		{
+			if(myRoom.jobs[job].assigned == "")
+			{// its unassigned
+				//find a bot that fits the needs and isnt assigned
+			}
+				
+		}		
+		
 	},
 
 	towerManagement: function(roomName)
@@ -390,7 +532,10 @@ var loopCore =
 				, 
 				(struct) => struct.structure.structureType == STRUCTURE_TOWER 
 			);
-			Game.getObjectById(nearestTower[0].structure.id).repair(rampart)			
+			if(nearestTower[0])
+			{
+				Game.getObjectById(nearestTower[0].structure.id).repair(rampart)
+			}
 		}
 		
 		function attackCreep (creep)
@@ -413,12 +558,19 @@ var loopCore =
 			}
 		}
 
+		function healCreep (creep)
+		{
+			var nearestTower = creep.pos.findClosestByPath(_.filter(creep.room.find(FIND_MY_STRUCTURES), (struct) => struct.structureType == STRUCTURE_TOWER && struct.energy && struct.energy > 100));
+			nearestTower.heal(creep)
+		}
+		
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
 		let thisRoom = Game.rooms[roomName];
-		if(roomName == 'W8N3')
+		if(thisRoom.find(FIND_MY_STRUCTURES, (struct) => struct.structureType == STRUCTURE_TOWER).length > 0)
 		{
 			let enemies = thisRoom.find(FIND_HOSTILE_CREEPS)
 			let damagedRamparts = _.filter(thisRoom.find(FIND_MY_STRUCTURES), (struct) => struct.structureType == STRUCTURE_RAMPART && struct.hits < rampartMinHealth);
+			let hurtCreeps = _.filter(thisRoom.find(FIND_MY_CREEPS), (creep) => creep.hits < creep.hitsMax);
 
 			if(enemies.length > 0)
 			{
@@ -435,6 +587,14 @@ var loopCore =
 					for(dmgRmprt in damagedRamparts)
 					{
 						repairRampart(damagedRamparts[dmgRmprt])
+					}
+					break;
+				}
+				case (myRoom.defcon == 0 && hurtCreeps.length > 0):
+				{//No Enemies, Creep Injured
+					for(hurtCreep in hurtCreeps)
+					{
+						healCreep(hurtCreeps[hurtCreep])
 					}
 					break;
 				}
@@ -476,14 +636,14 @@ var loopCore =
 		{
 			if(Game.rooms[roomName])
 			{
-				let thisController = Game.rooms[roomName].find(FIND_STRUCTURES, {filter: { structureType: STRUCTURE_CONTROLLER }})[0]
+				let thisController = Game.rooms[roomName].controller
 				if(thisController.my)
 				{
 					Game.spawns['W8N3'].spawnCreep([WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],'claimer'+Game.time,{memory: {role:'claimer', room: roomName}})
 				}
 				else
 				{
-					
+					Game.spawns['W8N3'].spawnCreep([CLAIM,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],'claimer'+Game.time,{memory: {role:'claimer', room: roomName}})
 				}
 			}
 			else
@@ -491,13 +651,13 @@ var loopCore =
 				Game.spawns['W8N3'].spawnCreep([CLAIM,WORK,WORK,CARRY,CARRY,MOVE,MOVE,MOVE,MOVE],'claimer'+Game.time,{memory: {role:'claimer', room: roomName}})
 			}
 		}
-		if(_.filter(Game.creeps, (creep) => creep.room.name == roomName).length > 0 && Game.spawns[roomName] !== undefined)
+		if(_.filter(Game.creeps, (creep) => creep.room.name == roomName).length > 0 && Game.spawns[roomName] !== undefined && Game.rooms[roomName].controller.my)
 		{
 			loopMemoryManagement.add(roomName);
 		}
 		if(_.filter(Memory.rooms, (room) => room.name == roomName).length > 0)
 		{
-			Game.flags.expand.remove()
+			//Game.flags.expand.remove()
 		}
 	},
 
@@ -506,29 +666,93 @@ var loopCore =
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
 		let thisRoom = Game.rooms[roomName];
 		
-		if(myRoom.phase >= 7)
+		let controllerLink = Game.getObjectById(myRoom.controller.store)
+		let spawnLink = Game.getObjectById(myRoom.spawns[0].link)
+		let controllerHandled = 0
+		let spawnHandled = 0
+		
+		if(myRoom.spawns[0].link)
 		{
-			let controllerLink = Game.getObjectById(myRoom.controller.store)
-			let spawnLink = Game.getObjectById(myRoom.spawns[0].link)
-			let controllerHandled = 0
-			let spawnHandled = 0
-			
-			for(srcLnk in myRoom.sources)
+			for(source in myRoom.sources)
 			{
-				let sourceLink = Game.getObjectById(myRoom.sources[srcLnk].link)
-				if((spawnLink.energy < 400 || spawnLink.energy === undefined) && spawnHandled == 0)
+				if(myRoom.sources[source].link)
 				{
-					sourceLink.transferEnergy(spawnLink)
-					spawnHandled = 1
-				}
-				else if(controllerLink.energy < 500 && controllerHandled == 0)
-				{
-					sourceLink.transferEnergy(controllerLink)
-					controllerHandled = 1
+					let sourceLink = Game.getObjectById(myRoom.sources[source].link)
+					if((spawnLink.energy < 500 || spawnLink.energy === undefined) && spawnHandled == 0 && sourceLink.energy > 500)
+					{//Spawn link is low or empty
+						sourceLink.transferEnergy(spawnLink)
+						spawnHandled = 1
+					}
+					else if(controllerLink && (controllerLink.energy < 500 || controllerLink.energy === undefined) && controllerHandled == 0 && sourceLink.energy > 500)
+					{//Controller link is low
+						sourceLink.transferEnergy(controllerLink)
+						controllerHandled = 1
+					}
+					else if(sourceLink.energy > 750 && myRoom.sources[source].store && Game.getObjectById(myRoom.sources[source].store).store.getFreeCapacity() == 0 && sourceLink.energy > 500)
+					{//Source Containers are full and so is link
+						sourceLink.transferEnergy(spawnLink)
+					}
 				}
 			}
-		}		
+		}
+		if(myRoom.spawns[1] && myRoom.spawns[1].link)
+		{
+			let sourceLink = Game.getObjectById(myRoom.sources[1].link)
+			if((controllerLink.energy < 500 || controllerLink.energy === undefined) && controllerHandled == 0)
+			{//Controller link is low
+				sourceLink.transferEnergy(controllerLink)
+				controllerHandled = 1
+			}
+			else if((spawnLink.energy < 400 || spawnLink.energy === undefined) && spawnHandled == 0)
+			{//Spawn link is low or empty
+				sourceLink.transferEnergy(spawnLink)
+				spawnHandled = 1
+			}
+			else if(sourceLink.energy > 750 && Game.getObjectById(myRoom.sources[1].store).store.getFreeCapacity() == 0)
+			{//Source Containers are full and so is link
+				sourceLink.transferEnergy(spawnLink)
+			}
+		}
+	},
+	
+	dataManagement: function(roomName)
+	{
+		var myRoom = Memory.rooms.find(element => element.name == roomName);
+		let thisRoom = Game.rooms[roomName];
+		
+		if(!myRoom.reportData)
+		{
+			myRoom.reportData = {}
+			myRoom.reportData.gclTicks = []
+			for (let step = 0; step < 10; step++)
+			{
+				myRoom.reportData.gclTicks.push(0);
+			}
+			myRoom.reportData.gclAvg = 0
+			myRoom.reportData.gclLastTick = 0
+		}
+		
+		let data = myRoom.reportData
+		data.gclTicks[9] = data.gclTicks[8]
+		data.gclTicks[8] = data.gclTicks[7]
+		data.gclTicks[7] = data.gclTicks[6]
+		data.gclTicks[6] = data.gclTicks[5]
+		data.gclTicks[5] = data.gclTicks[4]
+		data.gclTicks[4] = data.gclTicks[3]
+		data.gclTicks[3] = data.gclTicks[2]
+		data.gclTicks[2] = data.gclTicks[1]
+		data.gclTicks[1] = data.gclTicks[0]
+		data.gclTicks[0] = thisRoom.controller.progress
+		
+		var total = 0;
+		for(var i = 0; i < data.gclTicks.length-1; i++)
+		{
+			total += data.gclTicks[i] - data.gclTicks[i+1];
+		}
+		data.gclAvg = Math.ceil(total / data.gclTicks.length);
+		data.gclLastTick = data.gclTicks[0] - data.gclTicks[1]
 	}
+
 
 };
 

@@ -1,4 +1,5 @@
 var funcBuildOrders = require('func.buildOrders');
+var funcHelpers = require('func.helpers');
 var loopMemoryManagement =
 {
 	start: function(currentRoom)
@@ -10,95 +11,273 @@ var loopMemoryManagement =
 			let buildList = thisRoom.find(FIND_CONSTRUCTION_SITES)
 			switch(myRoom.phase)
 			{
-				case 0://we have room info and locations, build road to Source from Spawn
-				{
+				case 0:
+				{//Road From CityCenter to Spawn, Source, and Controller
+					
 					if(buildList.length < 1)
 					{
-						funcBuildOrders.buildCenterToSpawn(thisRoom.name)
-						myRoom.phase = 1
-						console.log(currentRoom,"Ready For Stage 1")
+						funcBuildOrders.buildCenterToSpawn(currentRoom)
+						funcBuildOrders.buildCenterToController(currentRoom)
+						funcBuildOrders.buildCenterToSource(currentRoom)
+						//funcBuildOrders.buildSpawnStorage(currentRoom)
+						//Get the containers for the sources and controller
+						
+						if(myRoom.controller.store && myRoom.sources[0].store && myRoom.spawnContainer &&
+							(
+								myRoom.sources[1].store
+								||
+								!myRoom.sources[1]
+							))
+						{
+							console.log(currentRoom,"Advancing to Phase", myRoom.phase+1)
+							myRoom.phase = 1							
+						}
+						else
+						{
+							if(!myRoom.controller.store)
+							{//Missing Controller Store, find it
+								let foundStructures = thisRoom.lookForAtArea(LOOK_STRUCTURES
+									,myRoom.controller.pos.y-3
+									,myRoom.controller.pos.x-3
+									,myRoom.controller.pos.y+3
+									,myRoom.controller.pos.x+3
+									,true
+									)
+									console.log(JSON.stringify(foundStructures))
+								if(foundStructures.length > 1)
+								{
+									let foundContainer = foundStructures.find(element => element.structure.structureType == STRUCTURE_CONTAINER);
+									if(foundContainer)
+									{
+										myRoom.controller.store = foundContainer.structure.id
+									}
+								}
+								else
+								{
+									myRoom.controller.store = foundStructures.id
+								}
+							}
+							if(!myRoom.sources[0].store)
+							{
+								let foundStructures = thisRoom.lookForAtArea(LOOK_STRUCTURES
+									,myRoom.sources[0].pos.y-1
+									,myRoom.sources[0].pos.x-1
+									,myRoom.sources[0].pos.y+1
+									,myRoom.sources[0].pos.x+1
+									,true
+									)
+								console.log(JSON.stringify(foundStructures))
+								if(foundStructures.length > 0)
+								{
+									let foundContainer = foundStructures.find(element => element.structure.structureType == STRUCTURE_CONTAINER);
+									
+									myRoom.sources[0].store = foundContainer.structure.id
+								}
+								else
+								{
+									myRoom.sources[0].store = foundContainer.id
+								}
+							}
+							if(myRoom.sources[1] &&!myRoom.sources[1].store)
+							{
+								let foundStructures = thisRoom.lookForAtArea(LOOK_STRUCTURES
+									,myRoom.sources[1].pos.y-1
+									,myRoom.sources[1].pos.x-1
+									,myRoom.sources[1].pos.y+1
+									,myRoom.sources[1].pos.x+1
+									,true
+									)
+								if(foundStructures.length > 0)
+								{
+									let foundContainer = foundStructures.find(element => element.structure.structureType == STRUCTURE_CONTAINER);
+									myRoom.sources[1].store = foundContainer.structure.id
+								}
+								else
+								{
+									myRoom.sources[1].store = foundStructures.id
+								}
+							}
+							if(!myRoom.spawnContainer)
+							{
+								if(thisRoom.controller.level > 3)
+								{
+									let thisStore = thisRoom.find(FIND_MY_STRUCTURES).find(element => element.structureType == STRUCTURE_STORAGE);
+									if(thisStore)
+									{
+										myRoom.spawnContainer = thisStore.id
+									}
+								}
+								else
+								{
+									let foundStructures = thisRoom.lookForAtArea(LOOK_STRUCTURES
+										,myRoom.spawns[0].pos.y-3
+										,myRoom.spawns[0].pos.x-3
+										,myRoom.spawns[0].pos.y+3
+										,myRoom.spawns[0].pos.x+3
+										,true
+										)
+									if(foundStructures.length > 0)
+									{
+										let foundContainer = foundStructures.find(element => element.structure.structureType == STRUCTURE_CONTAINER);
+										myRoom.spawnContainer = foundContainer.structure.id
+									}
+									else
+									{
+										console.log('No Structure Found Near Spawn')
+									}
+								}
+							}
+						}
+						
 					}
 					else
 					{
-						console.log(currentRoom,"Not Ready For Stage 1")
+						console.log(currentRoom,"Not Ready For Advancement, Building")				
 					}
 					break;
 				}
-				case 1://we have road to Source from Spawn, create road from Source to Controller
-				{
-					if(buildList.length < 1)
-					{
-						funcBuildOrders.buildCenterToController(thisRoom.name)
-						myRoom.phase = 2
-						console.log(currentRoom,"Ready For Stage 2")
-					}
-					break;
-				}
-				case 2://we have road to controller from sources
-				{
-					if(buildList.length < 1)
-					{
-						funcBuildOrders.buildCenterToSource(thisRoom.name)
-						myRoom.phase = 3
-						console.log(currentRoom,"Ready For Stage 3")
-					}
-					break;
-				}
-				case 3://Build Storage in city center
-				{
-					if(buildList.length < 1)
-					{
-						var myRoom = Memory.rooms.find(element => element.name == thisRoom.name);
-						let storageId = funcBuildOrders.buildSourceStorage(thisRoom.name)
-						myRoom.spawnContainer = storageId
-						myRoom.phase = 4
-						console.log(currentRoom,"Ready For Stage 4")
-					}
-					break;
-				}
-				case 4://Build containers for harvestors
-				{
-					if(buildList.length < 1)
-					{
-						//myRoom.phase = 5
-						console.log(currentRoom,"Ready For Stage 4")		
-					}
-					break;
-				}
-				case 5://Build Upgrager Container
-				{
-					let containerId = funcBuildOrders.buildUpgraderContainer(thisRoom.name)
-					if(containerId != 'Single Sources Unhandled')
-					{
-						var myRoom = Memory.rooms.find(element => element.name == thisRoom.name);
-						myRoom.controllerContainer = containerId
-						myRoom.phase = 6
-						console.log(currentRoom,"Ready For Stage 6")
-					}
-					break;
-				}
-				case 6://Build Spawn Container
-				{
-					let containerId = funcBuildOrders.buildSpawnContainer(thisRoom.name)
-					var myRoom = Memory.rooms.find(element => element.name == thisRoom.name);
-					myRoom.spawnContainer = containerId
-					myRoom.phase = 7
-					console.log(currentRoom,"Ready For Stage 7")
-					break;
-				}
-				case 7:
-				{
+				case 1:
+				{//Extensions first Round
 					if(buildList.length < 1)
 					{
 						funcBuildOrders.buildExtensions(thisRoom.name)
-						console.log(currentRoom,"Ready For Stage 7")		
+						myRoom.phase = myRoom.phase+1
+						console.log(currentRoom,"Advancing to Phase", myRoom.phase+1)
+					}
+					else
+					{						
+						console.log(currentRoom,"Not Ready For Advancement, Building")
+					}
+				}
+				case 2:
+				{//Build Spawn and Source Links
+					if(buildList.length < 1 && thisRoom.controller.level >= 6)
+					{
+						if(!myRoom.spawns[0].link)
+						{
+							let foundStructures = thisRoom.lookForAtArea(LOOK_STRUCTURES
+								,myRoom.spawns[0].pos.y-3
+								,myRoom.spawns[0].pos.x-3
+								,myRoom.spawns[0].pos.y+3
+								,myRoom.spawns[0].pos.x+3
+								,true
+								)
+							let foundLink = foundStructures.find(element => element.structure.structureType == STRUCTURE_LINK);
+							if(foundLink)
+							{	
+								myRoom.spawns[0].link = foundLink.structure.id
+							}
+						}
+						if(!myRoom.sources[0].link)
+						{
+							let foundStructures = thisRoom.lookForAtArea(LOOK_STRUCTURES
+								,myRoom.sources[0].pos.y-2
+								,myRoom.sources[0].pos.x-2
+								,myRoom.sources[0].pos.y+2
+								,myRoom.sources[0].pos.x+2
+								,true
+								)
+							if(foundStructures.length > 0)
+							{
+								let foundLink = foundStructures.find(element => element.structure.structureType == STRUCTURE_LINK);								
+								if(foundLink)
+								{	
+									myRoom.sources[0].link = foundLink.structure.id
+								}
+							}
+							else
+							{
+								console.log('No Structure Found Near Spawn')
+							}
+						}
+						if(!myRoom.sources[1].link)
+						{
+							let foundStructures = thisRoom.lookForAtArea(LOOK_STRUCTURES
+								,myRoom.sources[1].pos.y-2
+								,myRoom.sources[1].pos.x-2
+								,myRoom.sources[1].pos.y+2
+								,myRoom.sources[1].pos.x+2
+								,true
+								)
+							if(foundStructures.length > 0)
+							{
+								let foundLink = foundStructures.find(element => element.structure.structureType == STRUCTURE_LINK);
+								myRoom.sources[1].link = foundLink.structure.id
+							}
+							else
+							{
+								console.log('No Structure Found Near Spawn')
+							}
+						}
+						if(myRoom.spawns[0].link && myRoom.sources[0].link && (!myRoom.sources[1] || myRoom.sources[1].link))
+						{
+							console.log(currentRoom,"Advancing to Phase", myRoom.phase + 1)
+							myRoom.phase = myRoom.phase + 1
+						}
+						else
+						{
+							console.log(myRoom.name)
+							funcBuildOrders.buildLinks(thisRoom.name)
+						}
 					}
 					else
 					{
-						console.log(currentRoom,"Not Ready For Stage 7")
+						console.log(currentRoom,"Not Ready For Advancement, Building or Under Level")
 					}
 					break;
 				}
+				case 3:
+				{//Build Spawn Storage if it doesnt exist
+					if(buildList.length < 1)
+					{
+						if(myRoom.spawnContainer)
+						{
+							myRoom.phase = myRoom.phase+1
+							console.log(currentRoom,"Advancing to Phase", myRoom.phase+1)
+						}
+						else
+						{
+							funcBuildOrders.buildSpawnStorage(thisRoom.name)							
+						}
+					}
+					else
+					{
+						console.log(currentRoom,"Not Ready For Advancement, Building")
+					}
+					break;
+				}
+				case 4:
+				{//Build / Find Terminal				
+					if(buildList.length < 1)
+					{
+						if(!myRoom.terminal)
+						{
+							let thisTerminal = thisRoom.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TERMINAL } } )
+								console.log(JSON.stringify(thisTerminal))
+							if(thisTerminal)
+							{
+								myRoom.terminal = thisTerminal.id
+								console.log(currentRoom,"Advancing to Phase", myRoom.phase+1)
+								myRoom.phase = myRoom.phase+1
+								break
+							}
+							else
+							{
+								console.log(currentRoom,"Not Ready For Advancement, missing Terminal")
+								break
+							}
+						}
+					}
+					else
+					{
+						console.log(currentRoom,"Not Ready For Advancement, missing Building")
+						break
+					}
+				}					
+							
+				case 5:
+				case 6:
+				case 7:
 				case 8:
 				case 9:
 				case 10:
@@ -109,7 +288,6 @@ var loopMemoryManagement =
 			
 		}
 		
-
 	},
 	
 	add: function(currentRoom)
@@ -157,6 +335,7 @@ var loopMemoryManagement =
 			console.log(roomSource)
 			newSource.id = roomSources[roomSource].id
 			newSource.pos = roomSources[roomSource].pos
+			newSource.harvestersMax = funcHelpers.findSourceLimit(roomSources[roomSource].pos)
 			newRoom.sources.push(newSource)
 			xSum += roomSources[roomSource].pos.x
 			xCount++

@@ -1,5 +1,6 @@
 var loopCore = require('loop.core');
 var loopMemoryManagement = require('loop.memoryManagement')
+var billboard = require('billboard')
 var baseRoom = 'W8N3'
 
 module.exports.loop = function ()
@@ -14,13 +15,17 @@ module.exports.loop = function ()
 		loopCore.creepManagement(Memory.rooms[room].name)
 		loopCore.towerManagement(Memory.rooms[room].name)
 		loopCore.linkManagement(Memory.rooms[room].name)
+		loopCore.jobManagement(Memory.rooms[room].name)
+		loopCore.dataManagement(Memory.rooms[room].name)
 		if(Game.time % 50 == 0)
 		{
 			loopMemoryManagement.start(Memory.rooms[room].name)
 		}
 	}
 	
-	if(Game.gcl.level >= 2 && Game.time % 10 == 0)
+	billboard.build()
+	
+	if(Game.gcl.level >= 2 && Game.time % 100 == 0)
 	{		
 		let expFlags = _.filter(Game.flags,(flag) => flag.name == 'expand');
 		if(expFlags.length == 1)

@@ -35,63 +35,33 @@ var funcHelpers =
 				else if(task.slice(task.length-4,task.length) == "away")
 				{
 					let awayBy = Number(task.replace(/away/,""))
-					switch (true)
+					
+					var goal = { pos: pos2, range: 0}
+					var ret = PathFinder.search(pos1, goal,
 					{
-						case (pos1.x == pos2.x && pos1.y < pos2.y)://1 is up, x, y++ 
-						{							
-							newPosX = Number(pos1.x)
-							newPosY = Number(pos1.y) - awayBy
-							break;
-						}
-						case (pos1.x > pos2.x && pos1.y < pos2.y)://1 is up and right, x--, y++ 
-						{							
-							newPosX = Number(pos1.x) - awayBy
-							newPosY = Number(pos1.y) - awayBy
-							break;
-						}
-						case (pos1.x > pos2.x && pos1.y == pos2.y)://1 is right, x--, y
-						{							
-							newPosX = Number(pos1.x) - awayBy
-							newPosY = Number(pos1.y) - awayBy
-							break;
-						}
-						case (pos1.x > pos2.x && pos1.y > pos2.y)://1 is down and right, x--, y--
-						{							
-							newPosX = Number(pos1.x) - awayBy
-							newPosY = Number(pos1.y) - awayBy
-							break;
-						}
-						case (pos1.x == pos2.x && pos1.y < pos2.y)://1 is down, x, y-- 
-						{							
-							newPosX = Number(pos1.x)
-							newPosY = Number(pos1.y) + awayBy
-							break;
-						}
-						case (pos1.x < pos2.x && pos1.y < pos2.y)://1 is down and left, x++, y--
-						{							
-							newPosX = Number(pos1.x) + awayBy
-							newPosY = Number(pos1.y) + awayBy
-							break;
-						}
-						case (pos1.x < pos2.x && pos1.y == pos2.y)://1 is left, x++, y 
-						{							
-							newPosX = Number(pos1.x) + awayBy
-							newPosY = Number(pos1.y)
-							break;
-						}
-						case (pos1.x < pos2.x && pos1.y < pos2.y)://1 is up and left, x++, y++
-						{							
-							newPosX = Number(pos1.x) + awayBy
-							newPosY = Number(pos1.y) - awayBy
-							break;
-						}
-						case (pos1.x == pos2.x && pos1.y < pos2.y)://1 is up, Go Down
-						{							
-							newPosX = Number(pos1.x)
-							newPosY = Number(pos1.y) - awayBy
-							break;
-						}
-					}
+						plainCost: 5,
+						swampCost: 5,
+						roomCallback: function(roomName)
+						{
+							if (!room) return;
+							let costs = new PathFinder.CostMatrix;
+							room.find(FIND_STRUCTURES).forEach(function(struct)
+							{
+								if (struct.structureType === STRUCTURE_ROAD)
+								{
+									costs.set(struct.pos.x, struct.pos.y, 1);
+								}
+								else if (struct.structureType !== STRUCTURE_CONTAINER && (struct.structureType !== STRUCTURE_RAMPART || !struct.my))
+								{
+									costs.set(struct.pos.x, struct.pos.y, 0xff);
+								}
+							});
+							return costs;
+						},
+					});
+					
+					newPosX = ret.path[awayBy-1].x
+					newPosY = ret.path[awayBy-1].y
 					break;
 				}
 			}
@@ -103,15 +73,54 @@ var funcHelpers =
 				break;
 			}
 		}
-		
 		if(thisRoomTerrain.get(newPosX,newPosY) != TERRAIN_MASK_WALL)
 		{
 			return {x:newPosX,y:newPosY}
 		}
 		else
 		{
-			console.log('Point Blocked by Wall')
+			console.log('Point Blocked by Wall',newPosX,newPosY)
 		}
+	},
+	
+	findSourceLimit: function(pos)
+	{
+		const thisRoomTerrain = Game.map.getRoomTerrain(pos.roomName);
+		let notWallCounter = 0
+		if(thisRoomTerrain.get(pos.x - 1, pos.y - 1) != TERRAIN_MASK_WALL)//Left and Up
+		{
+			notWallCounter++
+		}
+		if(thisRoomTerrain.get(pos.x - 1, pos.y) != TERRAIN_MASK_WALL)//Left
+		{
+			notWallCounter++
+		}
+		if(thisRoomTerrain.get(pos.x - 1, pos.y + 1) != TERRAIN_MASK_WALL)//Left and Down
+		{
+			notWallCounter++
+		}
+		if(thisRoomTerrain.get(pos.x, pos.y - 1) != TERRAIN_MASK_WALL)//Up
+		{
+			notWallCounter++
+		}
+		if(thisRoomTerrain.get(pos.x, pos.y + 1) != TERRAIN_MASK_WALL)//Down
+		{
+			notWallCounter++
+		}
+		if(thisRoomTerrain.get(pos.x + 1, pos.y - 1) != TERRAIN_MASK_WALL)//Right and Up
+		{
+			notWallCounter++
+		}
+		if(thisRoomTerrain.get(pos.x + 1, pos.y) != TERRAIN_MASK_WALL)//Right
+		{
+			notWallCounter++
+		}
+		if(thisRoomTerrain.get(pos.x + 1, pos.y + 1) != TERRAIN_MASK_WALL)//Right and Down
+		{
+			notWallCounter++
+		}
+		return notWallCounter
+		
 	}
 };
 

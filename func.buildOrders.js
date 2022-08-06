@@ -90,9 +90,8 @@ var funcBuildOrders =
 	{
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
 		var room = Game.rooms[roomName]
-		var goal = { pos: myRoom.controller.pos, range: 1}
+		var goal = { pos: myRoom.controller.pos, range: 3}
 		const thisRoomTerrain = Game.map.getRoomTerrain(roomName)
-
 		var ret = PathFinder.search(myRoom.cityCenter.pos, goal,
 		{
 			plainCost: 5,
@@ -118,6 +117,10 @@ var funcBuildOrders =
 		for(var pathPoint in ret.path)
 		{
 			room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_ROAD);
+			if(pathPoint == ret.path.length - 1)
+			{
+				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_CONTAINER)
+			}
 		}
 		return 'completed'
 	},
@@ -194,69 +197,32 @@ var funcBuildOrders =
 			for(var pathPoint in ret.path)
 			{
 				room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				// }
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				// }
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				// }
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				// }
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x-1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				// }
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y-1, STRUCTURE_ROAD);
-				// }
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y, STRUCTURE_ROAD);
-				// }
-				// if(thisRoomTerrain.get(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1) != TERRAIN_MASK_WALL)
-				// {
-					// room.createConstructionSite(ret.path[pathPoint].x+1,ret.path[pathPoint].y+1, STRUCTURE_ROAD);
-				// }
+				if(pathPoint == ret.path.length - 1)
+				{
+					room.createConstructionSite(ret.path[pathPoint].x,ret.path[pathPoint].y, STRUCTURE_CONTAINER)
+				}
 			}
 		}
 
 		return 'completed'
 	},
 	
-	buildSourceStorage: function(roomName)
+	buildSpawnStorage: function(roomName)
 	{
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
 		var room = Game.rooms[roomName]
+
+		const thisRoomTerrain = Game.map.getRoomTerrain(roomName);
+		var newPoint = funcHelpers.findPointInLine(myRoom.name, myRoom.spawns[0].pos, myRoom.cityCenter.pos,"3away")
+		console.log(JSON.stringify(myRoom.spawns[0].pos),JSON.stringify(myRoom.cityCenter.pos))
 		if(room.controller.level > 3)
 		{
-			const thisRoomTerrain = Game.map.getRoomTerrain(roomName);
-			var newPoint = {}
-			if (myRoom.sources.length > 1)
-			{
-				newPoint = funcHelpers.findPointInLine(myRoom.name, myRoom.spawns[0].pos, myRoom.cityCenter.pos,"2away")
-			}		
-			
-			var result = room.createConstructionSite(newPoint.x,newPoint.y, STRUCTURE_STORAGE)
-			
-			if(result == 0)
-			{
-				let found = room.lookForAt(LOOK_CONSTRUCTION_SITES,newPoint.x,newPoint.y)
-				return found.id
-			}
-			else
-			{
-				console.log('Unable to Build Store',roomName,result,JSON.stringify(myRoom.cityCenter.pos))
-			}
+			room.createConstructionSite(newPoint.x,newPoint.y, STRUCTURE_STORAGE)
 		}
+		else
+		{
+			room.createConstructionSite(newPoint.x,newPoint.y, STRUCTURE_CONTAINER)
+		}			
 	},
 	
 	buildUpgraderContainer: function(roomName)
@@ -277,16 +243,46 @@ var funcBuildOrders =
 			console.log('Single Sources Unhandled')
 		}
 	},
-	
-	buildSpawnContainer: function(roomName)
+		
+	buildLinks: function(roomName)
 	{
 		var myRoom = Memory.rooms.find(element => element.name == roomName);
 		var room = Game.rooms[roomName]
-
-		var newPoint = funcHelpers.findPointInLine(myRoom.name, myRoom.spawns[0].pos, myRoom.cityCenter.pos, "2away")
-		room.createConstructionSite(newPoint.x,newPoint.y, STRUCTURE_CONTAINER)
-		let found = room.lookForAt(LOOK_CONSTRUCTION_SITES,newPoint.x,newPoint.y)
-		return found[0].id
+		const thisRoomTerrain = Game.map.getRoomTerrain(roomName);
+		for(source in myRoom.sources)
+		{
+			var goal = { pos: myRoom.sources[source].pos, range: 0}
+			var ret = PathFinder.search(myRoom.cityCenter.pos, goal,
+			{
+				plainCost: 5,
+				swampCost: 5,
+				roomCallback: function(roomName)
+				{
+					if (!room) return;
+					let costs = new PathFinder.CostMatrix;
+					room.find(FIND_STRUCTURES).forEach(function(struct)
+					{
+						if (struct.structureType === STRUCTURE_ROAD)
+						{
+							costs.set(struct.pos.x, struct.pos.y, 1);
+						}
+						else if (struct.structureType !== STRUCTURE_CONTAINER && (struct.structureType !== STRUCTURE_RAMPART || !struct.my))
+						{
+							costs.set(struct.pos.x, struct.pos.y, 0xff);
+						}
+					});
+					return costs;
+				},
+			});
+			let pathNum = ret.path.length - 2
+			let linkPoint = ret.path[pathNum]
+			room.createConstructionSite(linkPoint.x,linkPoint.y, STRUCTURE_LINK)
+		}
+		
+		let spawnLink = funcHelpers.findPointInLine(roomName,myRoom.spawns[0].pos, myRoom.cityCenter.pos, '2away')
+		room.createConstructionSite(spawnLink.x,spawnLink.y, STRUCTURE_LINK)
+		
+		return 'completed'
 	},
 	
 	buildExtensions: function(roomName)
@@ -297,9 +293,9 @@ var funcBuildOrders =
 		var keepTryin = true
 		
 		let core = myRoom.spawns[0].pos
-		var loopLevel = 2
+		var loopLevel = 1
 		
-		while (keepTryin == true && loopLevel <= 8)
+		while (keepTryin == true && loopLevel <= 6)
 		{
 			//top left
 			var thisPointX = core.x - loopLevel
@@ -335,14 +331,14 @@ var funcBuildOrders =
 				{
 					let foundItems = room.lookAt(thisPointX,thisPointY)
 					let foundTerrain = foundItems.find(element => element.type == 'terrain');
-					if(foundTerrain.terrain == 'plain')
+					if(foundTerrain.terrain != 'wall')
 					{
 						if(foundItems.filter(element => element.type == 'structure' && element.structure.structureType != 'road').length < 1)
 						{
 							let result = room.createConstructionSite(thisPointX,thisPointY, STRUCTURE_EXTENSION)
 							if(result == 0)
 							{
-								funcBuildOrders.buildRoadSurround({x:thisPointX, y:thisPointY, roomName:room.name})
+								//funcBuildOrders.buildRoadSurround({x:thisPointX, y:thisPointY, roomName:room.name})
 							}
 							else
 							{
@@ -404,7 +400,7 @@ var funcBuildOrders =
 					break;
 				}
 			}
-			loopLevel = loopLevel + 2
+			loopLevel = loopLevel + 1
 		}
 	},
 	
